@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Appraisal Report Generator</title>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#1c2a2e;--mute:#5b6b6f;--line:#d5dcdb;--acc:#0f5c5c;--accbg:#e3f0ee;--warn:#9a4a00;--warnbg:#fff1e0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121819;--card:#1b2426;--ink:#e6eeee;--mute:#9db0b2;--line:#324042;--acc:#6cc3bb;--accbg:#1d3533;--warn:#ffb866;--warnbg:#3a2a14}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+header{padding:16px 16px 4px;max-width:1280px;margin:auto}
+h1{font-size:20px;margin:0}
+header p{margin:2px 0 0;color:var(--mute);font-size:13px}
+main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:1280px;margin:auto;padding:12px 16px 40px}
+@media(min-width:960px){main{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:start}.out{position:sticky;top:12px}}
+section{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:0 0 10px;color:var(--acc)}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.w{grid-column:1/-1}
+label{display:block;font-size:12px;color:var(--mute)}
+input,select,textarea{width:100%;font:inherit;font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:2px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button{font:inherit;font-size:14px;border:1px solid var(--acc);background:var(--acc);color:var(--card);border-radius:6px;padding:7px 12px;cursor:pointer}
+button.s{background:transparent;color:var(--acc)}
+.comp{border:1px solid var(--line);border-radius:6px;padding:10px;margin-bottom:10px;background:var(--bg)}
+.comp input,.comp select{background:var(--card)}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.u{font-weight:600;color:var(--acc)}
+.stats{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0;font-size:14px}
+.stats b{color:var(--acc)}
+.warn{background:var(--warnbg);color:var(--warn);border-radius:6px;padding:8px 10px;margin:8px 0;font-size:13px}
+.warn:empty{display:none}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:3px;text-align:left;font-weight:400;color:var(--mute)}
+td input{margin:0}
+#rep{white-space:pre-wrap;line-height:1.85;font-size:14.5px}
+.bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--mute);margin:6px 0 0}
+.lk{font-size:14px;color:var(--acc);border:1px solid var(--acc);border-radius:6px;padding:7px 12px;text-decoration:none}
+.adv summary,.comp summary{cursor:pointer}.adv summary{color:var(--acc);margin:12px 0 8px}.comp summary.ch{margin:0}.oth{margin-top:4px}.zc{display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:4px}.ck{display:flex;align-items:center;gap:4px;font-size:14px;color:var(--ink)}.ck input{width:auto;margin:0}details.comp[open] summary{margin-bottom:8px}
+.kk{align-self:end;padding-bottom:6px}
+.cmp{overflow-x:auto}.cmp table{min-width:900px}.cmp th{color:var(--acc);font-weight:600;white-space:nowrap;padding:5px 6px;border-bottom:2px solid var(--line)}.cmp td{white-space:nowrap;color:var(--ink);padding:5px 6px;border-top:1px solid var(--line)}.cmp tr.me td{background:var(--accbg);font-weight:600}
+input.hl{background:var(--warnbg);color:var(--warn);border-color:var(--warn)}
+</style>
+</head>
+<body>
+<header><h1>Appraisal Report Generator</h1><p>Enter data on the left and the report text updates live on the right. Press "Copy" (複製) and paste it into the system. Your data is saved automatically in this device's browser.</p></header>
+<main>
+<div>
+<section><h2>1. 物件資料</h2><div class="g" id="s1"></div></section><section><h2>2. 周邊環境與評述</h2><div class="g"><div class="w"><label>Google 搜尋用文字（地址＋交通、學區、生活機能，自動產生）<input id="gtxt" readonly></label></div></div><div class="bar" style="margin-top:8px"><button class="s" onclick="copyT($('gtxt').value,this,'複製搜尋文字')">複製搜尋文字</button><a class="lk" id="gl" target="_blank" rel="noopener">Google 搜尋</a></div><div class="g" id="se"></div><div class="bar" style="margin-top:8px"><a class="lk" id="m1" target="_blank" rel="noopener">地圖：交通</a><a class="lk" id="m2" target="_blank" rel="noopener">地圖：生活機能</a><a class="lk" id="m3" target="_blank" rel="noopener">地圖：學校</a><a class="lk" id="m4" target="_blank" rel="noopener">學區查詢</a></div><div class="g" style="margin-top:10px"><div class="w"><label>整體評述模板<select id="evsel"></select></label></div><div class="w"><label>整體評述(可直接修改)<textarea id="evtext" rows="4"></textarea></label></div></div><details class="adv"><summary>新增 / 刪除自訂模板</summary><div class="g"><div class="w"><label>模板名稱<input id="evname" placeholder="例：模板三"></label></div></div><div class="bar" style="margin-top:8px"><button class="s" onclick="evAdd()">將上方評述存為模板</button><button class="s" onclick="evDel()">刪除所選自訂模板</button></div><div class="hint" id="evhint"></div></details><div class="g" id="se2" style="margin-top:10px"></div></section>
+<section><h2>3. 車位</h2><div class="g" id="sp"></div></section>
+<section><h2>4. 佐證資料</h2>
+<div class="g"><div class="w"><label>佐證說明<input id="cnote"></label></div></div>
+<div id="comps" style="margin-top:10px"></div>
+<details class="adv"><summary>貼上佐證文字快速匯入(選用)</summary><label>貼上佐證文字(可一次貼多筆，自動拆成欄位)<textarea id="paste" rows="3" placeholder="例：(3)聯徵中心銀行鑑價資訊(M80、M81)：115/06鑑價資料，○○區○○路○○號物件，RC造15層電梯大樓之第8層，土地面積4.25坪，建物面積25.53坪(不含B3坡道平面車位6.15坪)，屋齡4.1年，勘估金額11,520仟元，扣除車位實價1,900仟元後…"></textarea></label><div class="bar"><button class="s" onclick="parseC()">解析並新增佐證</button><span class="hint" id="pmsg"></span></div></details><div class="bar"><button class="s" onclick="addC('real')">＋ 實價登錄</button><button class="s" onclick="addC('jp')">＋ 聯徵鑑價(M80、M81)</button></div>
+<div class="hint">每建坪價 = (總價 − 車位價) ÷ 建坪，自動計算；本案選「無車位」時，佐證不扣車位、不顯示車位資訊。</div>
+</section>
+<section><h2>5. 勘估單價</h2>
+<div class="stats" id="st"></div>
+<div class="g"><div><label>本案每建坪勘估單價(仟元)<input id="unit" type="number" step="1"></label></div></div>
+<div class="stats" id="tot"></div></section>
+<section><h2>6. 貸款</h2><div class="g" id="s3"></div>
+<div class="g"><div class="w"><label>借款人名下房屋／貸款類型<select id="own"><option>名下無房購屋</option><option>名下有房購屋</option><option>增貸（非購屋貸款）</option></select></label></div><div id="elw"><label>增貸貸款種類<select id="eloan"><option>房屋輕鬆貸第一類</option><option>房屋輕鬆貸第二類</option><option>房屋輕鬆貸第三類</option></select></label></div><div><label>貸款方案<select id="plan"></select></label></div><div id="wgw"><label>借款人年薪(築巢優利貸)<select id="wage"><option>≥50萬元</option><option>＜50萬元</option></select></label></div><div><label>借款人收支比(%)<input id="ratio" type="number" step="1"></label></div><div id="bsw"><label>依核貸成數規定基準成數(成)<input id="bs" type="number" step="0.5"></label></div></div><details class="adv" open><summary>收支比對應最高核貸成數(依上方選項，目前級距標示)</summary><table id="lt"></table></details>
+<details class="adv"><summary>成數規則與第五段句型(進階，一般不用改)</summary><p class="hint">基準成數＝「依核貸成數規定」之成數(%)，築巢優利貸請勾選</p>
+<table><thead><tr><th>方案</th><th>方案全名(報告用)</th><th>築巢優利貸</th><th>基準成數(%)</th></tr></thead><tbody id="rules"></tbody></table><label style="margin-top:8px">第五點句型(依所選方案，可修改；可用 {區域}{方案}{身分}{年薪}{收支}{核估}{基準}{成數})<textarea id="tp" rows="4"></textarea></label></details><div class="stats" id="loan"></div></section>
+</div>
+<div class="out"><section><h2>勘估報告</h2><div class="warn" id="chk"></div>
+<div class="bar"><button onclick="copyR()" id="cp">複製</button><button class="s" onclick="clr()">清空所有欄位</button><button class="s" onclick="rst()">還原範例</button></div>
+<div id="rep"></div></section></div>
+</main>
+<div style="max-width:1280px;margin:0 auto;padding:0 16px 40px"><section><h2>比較表（僅供最後檢視，不列入報告）</h2><div class="cmp"><table id="cmp"></table></div><p class="hint">建坪價差＝(佐證建坪價 − 本案建坪價) ÷ 本案建坪價；本案屋齡依完工年月與今天推算。</p></section></div>
+<script>
+var PKO=["坡道平面車位","坡道機械車位","坡道平面雙車位","坡道機械雙車位","雙車位"];var SA=[["addr","地址（預設僅到區域，請補完整地址）","高雄市仁武區",1],["zoneT","使用分區","住宅區",0,["住宅區","商業區"]],["zoneN","細分(可複選)","第三種,第四種",1,"Z"],["builder","建商","○○建設有限公司"],["proj","建案","○○○"],["date","完工年月(民國)","115年1月"],["struct","構造","鋼筋混凝土（RC）造",0,["鋼筋混凝土（RC）造","加強磚造（RB）"]],["bt","建物型態","電梯大樓",0,["電梯大樓","無電梯大樓"]],["floors","總樓層","15"],["floor","本案樓層","14"],["land","土地面積(坪)","5.44"],["area","建物面積(坪)","32.63"],];var SP=[["hasPk","本案有無車位","有車位",0,["有車位","無車位"]],["pkloc","車位位置","地下二層",0,["地下一層","地下二層","地下三層","地下四層","地下五層"]],["pkno","車位編號","○○"],["pkt","車位型式","坡道平面車位",0,PKO],["pa","車位持分坪","6.50"],];var EVN="不套用評述",TP0=[{n:"模板一",t:"本案周邊交通往來便利，鄰近學區及各項教育資源，生活圈內商業及民生設施尚稱完善，足以滿足日常生活所需，整體區位條件尚佳。"},{n:"模板二",t:"本案周邊交通、學區及生活機能尚稱便利，鄰近道路交通網絡及相關民生設施，日常生活所需尚可獲得滿足，整體居住條件尚佳。"}],CT=[];
+var SE=[["env","周邊環境(自行整理後貼上整段，例：押品周邊鄰近…)","押品周邊交通方面，鄰近○○路、○○路、國道○○交流道，對外交通便利；學區包含○○國小及○○國中",1,"T"]];var SE2=[["purpose","使用目的","購入後自用"],["nuis","嫌惡設施數","5"],["nuisNote","嫌惡設施評估","評估對本案債權保障尚無直接影響",1]];
+var S3=[["buy","購價(仟元，孰低法用)",""],["zn","押品區域","高雄市A區"]];var SQ=[["ref","車位參考行情","鄰近○○路地下一層（屋齡1年，距離700公尺）成交價2,150仟元",1],["thisPk","本案車位說明","平面車位地下二層成交價2,000仟元",1],["pv","車位勘估價(仟元)","2000"]];var S1=SA.concat(SP,SQ,SE,SE2);
+var YML=ymList();var CF=[["ym","年月","115/7",0,YML],["addr","地址/物件","○○路○○號"],["same","同社區","",0,"K"],["st","構造","RC造",0,["RC造","RB造"]],["tf","總樓層","15"],["bt","型態","電梯大樓",0,["電梯大樓","無電梯大樓"]],["fl","所在樓層","14"],["land","土地坪","7.07"],["area","建物坪(不含車位)","43.6"],["pkf","車位樓層(可複選)","B1",0,"M"],["pkt","車位型式","坡道平面車位",0,PKO],["pa","車位坪","8.22"],["age","屋齡(年)","3"],["total","總價/勘估金額(仟元)","17000"],["pp","車位價(仟元)","2150"]];
+var EX=[["real","115/7","○○路○○號","15","14","7.07","43.6","B1","8.22","3","17000","2150"],["real","115/7","○○街○○號","14","13","3.32","24.82","B3","4.95","2","10050","1900"],["real","115/5","仁武區○○路○○號","15","8","3.71","21.7","B2","6.50","1","8500","2000"],["jp","115/5","○○路○○號12樓","15","12","3.82","24.49","","5.93","1","11110","2000"],["jp","115/6","○○路○○號9樓(範例)","15","9","3.60","23.8","","5.93","1","10300","2000"]].map(function(a){return{t:a[0],d:{ym:a[1],addr:a[2],st:"RC造",tf:a[3],bt:"電梯大樓",fl:a[4],land:a[5],area:a[6],pkf:a[7],pkt:"坡道平面車位",pa:a[8],age:a[9],total:a[10],pp:a[11]}}});EX[2].d.same=true;
+var DR=[{n:"築巢",f:"108～116年築巢優利貸",c:1,b:80,tp:"押品位處{區域}，{身分}，借款人年薪{年薪}，符合「{方案}」適用資格，經查借款人收支比{收支}，爰{核估}，尚符合本行規定。"},{n:"青安",f:"青年安心成家貸款3.0方案",c:0,b:80,tp:"押品位處{區域}，{身分}，借款人適用「{方案}」，經查借款人收支比{收支}，爰{核估}，尚符合本行規定。"},{n:"青安-新婚",f:"青年安心成家貸款3.0方案（新婚家庭）",c:0,b:80,tp:"押品位處{區域}，{身分}，借款人適用「{方案}」，經查借款人收支比{收支}，爰{核估}，尚符合本行規定。"},{n:"青安-育兒",f:"青年安心成家貸款3.0方案（育兒家庭）",c:0,b:80,tp:"押品位處{區域}，{身分}，借款人適用「{方案}」，經查借款人收支比{收支}，爰{核估}，尚符合本行規定。"},{n:"一般房貸",f:"一般房貸",c:0,b:80,tp:"押品位處{區域}，{身分}，經查借款人收支比{收支}，爰{核估}，尚符合本行規定。"}];var RULES=JSON.parse(JSON.stringify(DR));
+var C=[],V={},KEY="appraisal-v2",NP=false;
+var OWN=["名下無房購屋","名下有房購屋","增貸（非購屋貸款）"],OWT=["借款人名下無自用住宅，本案屬購置自用住宅貸款","借款人名下已有自用住宅，本案非屬無自用住宅者購置自用住宅貸款","借款人名下已有自用住宅，本案屬增貸（非購屋貸款）"];
+function lcalc(g,c,low,bs,x){var th=g?[200,180,160,140]:[180,160,140,120],cut=[0,.5,1,1.5,2],fx=g?[8,7.5,7,6.5,6]:[8.5,7.5,7,6.5,6],rows=[],i,k=-1;
+for(i=0;i<5;i++){var lab=i==0?"X≥"+th[0]+"%":i==4?"X＜"+th[3]+"%":th[i]+"%≤X＜"+th[i-1]+"%",d=i==0?"達"+th[0]+"%以上":i==4?"未達"+th[3]+"%":th[i]+"%以上未達"+th[i-1]+"%",p,det="";
+if(c&&(!low||(!g&&i==0))){p=fx[i]}else{p=bs-cut[i];det="依核貸成數規定"+(c?"(分區一覽表)":"")+bs+"成"+(cut[i]?"減"+cut[i]+"成":"")}
+rows.push({lab:lab,d:d,p:p,det:det})}
+if(isFinite(x)){for(i=0;i<5;i++){if(i==4||x>=th[i]){k=i;break}}}
+return{rows:rows,k:k,pct:k<0?NaN:rows[k].p,r:k<0?null:rows[k]}}
+function syncBs(){var r=RULES[$("plan").value];if(r)$("bs").value=(r.b!=null?r.b:80)/10}
+function $(i){return document.getElementById(i)}
+function fmt(n){return isFinite(n)?Math.round(n).toLocaleString("en-US"):"—"}
+function num(x){var n=parseFloat(String(x).replace(/,/g,""));return isNaN(n)?NaN:n}
+function unitOf(c){return (num(c.total)-(NP?0:(num(c.pp)||0)))/num(c.area)}
+var OTH="其他(自行輸入)",ZS=["第一種","第二種","第三種","第四種"];
+function ctl(f,at,val){var h;if(f[4]=="Z")return '<div class="w"><label>'+f[1]+'</label><div class="zc" '+at+'>'+ZS.map(function(z){return '<label class="ck"><input type="checkbox" value="'+z+'"> '+z+'</label>'}).join("")+'</div></div>';if(f[4]=="T")return '<div class="w"><label>'+f[1]+'<textarea '+at+' rows="4"></textarea></label></div>';if(f[4]=="K")return '<div class="kk"><label class="ck"><input type="checkbox" '+at+(val?' checked':'')+'> '+f[1]+'</label></div>';if(f[4]=="M"){var cur=String(val||"").split(",");return '<div class="w"><label>'+f[1]+'</label><div class="zc" '+at+'>'+["B1","B2","B3","B4","B5","B6"].map(function(z){return '<label class="ck"><input type="checkbox" value="'+z+'"'+(cur.indexOf(z)>=0?' checked':'')+'> '+z+'</label>'}).join("")+'</div></div>'}if(f[4]){var inl=f[4].indexOf(val)>=0||val===""||val==null;h='<select '+at+'>'+f[4].concat([OTH]).map(function(o){return '<option'+((o==val||(o==OTH&&!inl))?' selected':'')+'>'+o+'</option>'}).join("")+'</select><input class="oth" placeholder="自行輸入" style="display:'+(inl?'none':'')+'" value="'+(inl?'':String(val).replace(/"/g,"&quot;"))+'">'}else h='<input '+at+' value="'+String(val).replace(/"/g,"&quot;")+'">';return '<div'+(f[3]?' class="w"':'')+'><label>'+f[1]+h+'</label></div>'}
+function inputs(arr,box){$(box).innerHTML=arr.map(function(f){return ctl(f,'id="'+f[0]+'" data-f="1"',"")}).join("")}
+function fill(){S1.concat(S3).forEach(function(f){setF(f[0],V[f[0]]!=null?V[f[0]]:f[2])})}
+function addC(t,d){var o={};CF.forEach(function(f){o[f[0]]=d?d[f[0]]:defC(f)});C.push({t:t,d:o,o:!d});drawC();run()}
+function delC(i){C.splice(i,1);drawC();run()}
+function drawC(){var h="";C.forEach(function(c,i){h+='<details class="comp"'+(c.o===false?"":" open")+' ontoggle="C['+i+'].o=this.open"><summary class="ch"><b>'+(c.t=="real"?"實價登錄":"聯徵鑑價")+" #"+(i+1)+'</b><span class="u" id="cu'+i+'"></span><button class="s" onclick="event.preventDefault();delC('+i+')">刪除</button></summary><div class="g">'+CF.map(function(f){return ctl(f,'data-i="'+i+'" data-k="'+f[0]+'"',c.d[f[0]])}).join("")+"</div></details>"});$("comps").innerHTML=h;C.forEach(function(c,i){upU(i)})}
+function upU(i){var u=unitOf(C[i].d);var e=$("cu"+i);if(e)e.textContent=(C[i].d.same?"同社區":"")+C[i].d.addr+"　每建坪 "+fmt(u)+" 仟元"}
+function drawR(){$("rules").innerHTML=RULES.map(function(r,i){return "<tr><td><input data-r="+i+" data-k='n' value='"+r.n+"'></td><td><input data-r="+i+" data-k='f' value='"+r.f+"'></td><td><input type=checkbox data-r="+i+" data-k='c'"+(r.c?" checked":"")+"></td><td><input type=number data-r="+i+" data-k='b' value='"+(r.b!=null?r.b:80)+"'></td></tr>"}).join("");var p=$("plan"),cur=p.value||V.plan;p.innerHTML=RULES.map(function(r,i){return '<option value="'+i+'">'+r.n+"</option>"}).join("");p.value=cur!=null&&RULES[cur]?cur:0;$("tp").value=RULES[p.value].tp||"";syncBs()}
+function g(id){var e=$(id);if(e.classList.contains("zc"))return[].filter.call(e.querySelectorAll("input"),function(c){return c.checked}).map(function(c){return c.value}).join(",");var v=e.value.trim();if(v==OTH){var o=e.nextElementSibling;return o?o.value.trim():""}return v}
+function run(){
+ $("addr").classList.toggle("hl",!/[路街道巷弄號]/.test(g("addr")));NP=g("hasPk")=="無車位";C.forEach(function(c,i){upU(i)});["pkf","pkt","pa","pp"].forEach(function(k){[].forEach.call(document.querySelectorAll('[data-k="'+k+'"]'),function(e){(e.classList.contains("zc")?e.parentNode:e.closest("div")).style.display=NP?"none":""})});
+ var real=[],jp=[],us=[];
+ C.forEach(function(c){(c.t=="real"?real:jp).push(c);var u=unitOf(c.d);if(isFinite(u))us.push(u)});
+ var mn=Math.min.apply(null,us),mx=Math.max.apply(null,us),av=us.reduce(function(a,b){return a+b},0)/us.length;
+ var sd=us.slice().sort(function(a,b){return a-b}),md=sd.length?(sd.length%2?sd[(sd.length-1)/2]:(sd[sd.length/2-1]+sd[sd.length/2])/2):NaN;
+ $("st").innerHTML=us.length?"<span>最低 <b>"+fmt(mn)+"</b></span><span>最高 <b>"+fmt(mx)+"</b></span><span>平均 <b>"+fmt(av)+"</b></span><span>中位數 <b>"+fmt(md)+"</b></span><span>(仟元/建坪)</span><button class='s' onclick='setU("+Math.round(av)+")'>採平均</button><button class='s' onclick='setU("+Math.round(md)+")'>採中位數</button>":"尚無佐證資料";
+ var u=num($("unit").value),A=num($("area").value),np=g("hasPk")=="無車位",pv=np?0:num($("pv").value)||0;
+ var bld=u*A,T=bld+pv;["pkloc","pkno","pkt","pa","ref","thisPk","pv"].forEach(function(id){$(id).closest("div").style.display=np?"none":""});var zt=g("zoneT");$("zoneN").parentNode.style.display=(zt=="住宅區"||zt=="商業區")?"":"none";
+ $("tot").innerHTML=isFinite(T)?"<span>建物 "+fmt(bld)+"</span><span>＋ 車位 "+fmt(pv)+"</span><span>＝ 勘估總價 <b>"+fmt(T)+"</b> 仟元</span>":"";
+ drawCmp(T,u,pv,np);
+ var w=[];if(real.length<2)w.push("實價登錄佐證需至少2筆(目前"+real.length+"筆)");if(jp.length<1)w.push("聯徵鑑價佐證需至少1筆");
+ if(isFinite(u)&&us.length&&(u<mn||u>mx))w.push("本案單價 "+fmt(u)+" 超出佐證區間 "+fmt(mn)+"~"+fmt(mx)+"，請補充說明");
+ $("chk").innerHTML=w.join("<br>");
+ var r=RULES[$("plan").value]||RULES[0],ratio=num($("ratio").value),own=$("own").value,oi=Math.max(0,OWN.indexOf(own)),isC=!!r.c,lowW=$("wage").value.charAt(0)=="＜",bs=(r.b!=null?r.b:80)/10,buy=num($("buy").value),loanOnly=oi==2,useBuy=!loanOnly&&isFinite(buy)&&buy<=T,base=(loanOnly||!isFinite(buy))?T:Math.min(buy,T),LR=lcalc(oi==0?0:1,isC,lowW,bs,ratio),pct=LR.pct*10,L=base*pct/100,cs=isFinite(pct)?pct/10:"—";
+ $("elw").style.display=loanOnly?"":"none";$("wgw").style.display=isC?"":"none";$("bsw").style.display=(isC&&!lowW)?"none":"";
+ $("lt").innerHTML="<tr><th>收支比級距</th><th>最高核貸成數</th></tr>"+LR.rows.map(function(x,j){var cur=j==LR.k;return "<tr"+(cur?' style="background:var(--accbg);color:var(--ink);font-weight:600"':"")+"><td>"+(cur?"▶ ":"")+x.lab+"</td><td>"+x.p+" 成"+(x.det?"（"+x.det+"）":"")+"</td></tr>"}).join("");
+ if(!isFinite(ratio))$("chk").innerHTML+=($("chk").innerHTML?"<br>":"")+"請輸入借款人收支比";
+ $("loan").innerHTML=isFinite(L)?"<span>收支比級距：<b>"+LR.r.lab+"</b></span><span>最高核貸成數 <b>"+cs+"</b> 成</span><span>核估基準："+(useBuy?"購價":"時價")+" <b>"+fmt(base)+"</b></span><span>核估放款值 <b>"+fmt(L)+"</b> 仟元</span>":"";
+ var nu=g("nuis");
+ var env=g("env").replace(/[，、,;；。\s]+$/,""),evt=$("evtext").value.trim();
+ var p1="本案押品位於"+addrTxt()+"，土地使用分區屬"+zoneTxt()+"，係"+g("builder")+"「"+g("proj")+"」建案，民國"+g("date")+"新建成"+g("struct")+g("floors")+"層"+g("bt")+"第"+g("floor")+"層，土地面積約"+g("land")+"坪，建物面積"+g("area")+"坪"+(np?"":"(不含"+g("pkloc")+"#"+g("pkno")+g("pkt")+"持分面積"+g("pa")+"坪)")+(env?"，"+env:"")+(evt?"，"+evt+(/[。.]$/.test(evt)?"":"。")+"借款人擬"+g("purpose")+"。":"，借款人擬"+g("purpose")+"。")+(num(nu)>0?"(另據行內e-loan電子地圖報告表顯示押品周遭有"+nu+"處嫌惡設施，"+g("nuisNote")+"。)":"(另據行內e-loan電子地圖報告表顯示押品周遭無嫌惡設施。)");
+ function line(c,n){var d=c.d;var tail=c.t=="real"?"，總價"+fmt(num(d.total))+(NP?"仟元，每建坪成交價約":"仟元，扣除車位實價"+fmt(num(d.pp))+"千元後，每建坪成交價約")+fmt(unitOf(d))+"仟元。":"，勘估金額"+fmt(num(d.total))+(NP?"仟元，每建坪勘估價約":"仟元，扣除車位實價"+fmt(num(d.pp))+"仟元（車位參考鄰近地區實價登錄價格）後，每建坪勘估價約")+fmt(unitOf(d))+"仟元。";
+  return "("+n+")"+(c.t=="real"?"內政部不動產交易實價登錄：":"聯徵中心銀行鑑價資訊(M80、M81)：")+d.ym+(c.t=="real"?"成交資料，":"鑑價資料，")+(d.same?"同社區":"")+d.addr+"物件，"+d.st+d.tf+"層"+d.bt+"之第"+d.fl+"層，土地面積"+d.land+"坪，建物面積"+d.area+"坪"+(NP?"":"(不含"+pkTxt(d.pkf)+d.pkt+d.pa+"坪)")+"，屋齡"+d.age+"年"+tail}
+ var n=0,p2="經查佐證資料如下：\n"+g("cnote")+"\n";
+ if(real.length){p2+="內政部不動產交易實價查詢服務網\n";real.forEach(function(c){p2+=line(c,++n)+"\n"})}
+ if(jp.length){p2+="聯徵中心銀行鑑價資訊(M80、M81)\n";jp.forEach(function(c){p2+=line(c,++n)+"\n"})}
+ var p3="車位價格參考"+g("ref")+"，本案為"+g("thisPk")+"，綜合評估後以"+fmt(pv)+"仟元為勘估價格。";
+ var p4="經查鄰近地區相似物件，經概略比較分析，每建坪時價位於"+fmt(mn)+"~"+fmt(mx)+"仟元間，惟仍視立地條件、屋齡、使用效益及個案條件不同而有所差異，本案擬以建坪時價約"+fmt(u)+"仟元勘估，總勘估時價為"+fmt(T)+"仟元，尚屬合理。";
+ var RR=LR.r,bas=useBuy?"購價":"時價",rule="依個案收支比率對應最高核貸成數規定，最高核貸成數為"+cs+"成"+(RR&&RR.det?"（"+RR.det+"）":""),hc=loanOnly?"依時價之"+cs+"成核估放款值":"依購價時價孰低法之"+bas+cs+"成核估放款值";
+ var isQA=/青安|青年安心/.test(r.n+r.f),idt=(isQA&&oi==0)?"":OWT[oi]+(loanOnly?"，貸款種類為「"+$("eloan").value+"」":""),p5=(r.tp||"").split("{區域}").join(g("zn")).split("{方案}").join(r.f).split("{身分}").join(idt).split("{年薪}").join(lowW?"未達50萬元":"達50萬元以上").split("{收支}").join(RR?RR.d:"（請輸入收支比）").split("{規則}").join("").split("{核估}").join(hc).split("{基準}").join(bas).split("{成數}").join(cs).replace(/，{2,}/g,"，");
+ $("rep").textContent=[p1,p2.replace(/\n$/,""),np?"":p3,p4,p5].filter(Boolean).map(function(x,i){return "一二三四五"[i]+"、"+x}).join("\n\n").replace(/\(/g,"（").replace(/\)/g,"）");
+ save()}
+function ymList(){var d=new Date(),y=d.getFullYear()-1911,m=d.getMonth()+1,a=[];for(var i=0;i<84;i++){a.push(y+"/"+m);m--;if(m<1){m=12;y--}}return a}
+function dist(){var m=g("addr").match(/[市縣]([一-龥]{1,3}[區鄉鎮市])/);return m?m[1]:""}
+function defC(f){var k=f[0];if(k=="ym")return YML[0];if(k=="addr")return dist();if(k=="same")return false;return f[2]}
+function pkTxt(v){var a=String(v||"").split(",").filter(Boolean);return a.length<2?(a[0]||""):a.slice(0,-1).join("、")+"及"+a[a.length-1]}
+function srchTxt(){return addrTxt().replace(/\s*[0-9]+\s*樓.*$/,"").trim()+" 交通 學區 生活機能"}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function drawCmp(T,u,pv,np){
+ var m=g("date").match(/([0-9]+)\s*年\s*([0-9]+)?/),age="—",now=new Date();
+ if(m){var dm=(now.getFullYear()-1911)*12+now.getMonth()+1-(num(m[1])*12+(num(m[2])||1));age=(Math.max(0,dm)/12).toFixed(1)+"(推算)"}
+ function row(cls,a){return "<tr"+(cls?' class="'+cls+'"':"")+">"+a.map(function(x){return "<td>"+esc(x)+"</td>"}).join("")+"</tr>"}
+ var h="<tr>"+["類別","年月","地址","樓層","屋齡(年)","土地(坪)","建物(坪)","車位(坪)","總價(仟元)","車位價(仟元)","建坪價(仟元)","建坪價差"].map(function(x){return "<th>"+x+"</th>"}).join("")+"</tr>";
+ h+=row("me",["本案",g("date"),addrTxt(),g("floor")+"/"+g("floors")+"F",age,g("land"),g("area"),np?"—":g("pa"),fmt(T),np?"—":fmt(pv),fmt(u),"—"]);
+ C.forEach(function(c,i){var d=c.d,cu=unitOf(d),df=(isFinite(cu)&&isFinite(u)&&u)?(cu-u)/u*100:NaN;h+=row("",[(c.t=="real"?"實價 #":"聯徵 #")+(i+1),d.ym,(d.same?"同社區":"")+d.addr,d.fl+"/"+d.tf+"F",d.age,d.land,d.area,NP?"—":d.pa,fmt(num(d.total)),NP?"—":fmt(num(d.pp)),fmt(cu),isFinite(df)?(df>0?"+":"")+df.toFixed(1)+"%":"—"])});
+ $("cmp").innerHTML=h}
+function addrTxt(){return g("addr").replace(/[0-9]+鄰/g,"").replace(/(?<=[區鄉鎮市])[一-龥]{1,4}里(?![路街大道巷弄])/,"")}
+function cm(id){var v=g(id),m=TPL[id];return m.hasOwnProperty(v)?m[v]:v}
+function drawEv(){var e=$("evsel");e.innerHTML="";[EVN].concat(TP0.concat(CT).map(function(x){return x.n})).forEach(function(n){var o=document.createElement("option");o.textContent=n;e.appendChild(o)});var v=V.evsel!=null?V.evsel:TP0[0].n;e.value=v;if(e.value!=v)e.value=EVN;$("evtext").value=V.evtext!=null?V.evtext:TP0[0].t}
+function evPick(){var n=$("evsel").value,t="";TP0.concat(CT).forEach(function(x){if(x.n==n)t=x.t});$("evtext").value=t;run()}
+function evAdd(){var n=$("evname").value.trim(),t=$("evtext").value.trim(),h=$("evhint");if(!n||!t){h.textContent="請先輸入模板名稱與評述內容";return}if(TP0.some(function(x){return x.n==n})||n==EVN){h.textContent="名稱與內建模板重複，請換一個";return}var k=-1;CT.forEach(function(x,i){if(x.n==n)k=i});if(k>=0)CT[k].t=t;else CT.push({n:n,t:t});V.evsel=n;V.evtext=t;drawEv();$("evname").value="";h.textContent="已儲存模板「"+n+"」";run()}
+function evDel(){var n=$("evsel").value,h=$("evhint"),k=-1;CT.forEach(function(x,i){if(x.n==n)k=i});if(k<0){h.textContent="只能刪除自訂模板";return}CT.splice(k,1);V.evsel=EVN;V.evtext=$("evtext").value;drawEv();h.textContent="已刪除模板「"+n+"」";run()}
+function links(){var ad=g("addr"),st=srchTxt();$("gtxt").value=st;$("gl").href="https://www.google.com/search?q="+encodeURIComponent(st);[["m1","交流道 捷運 附近 "],["m2","市場 超市 醫院 附近 "],["m3","國小 國中 附近 "]].forEach(function(x){$(x[0]).href="https://www.google.com/maps/search/"+encodeURIComponent(x[1]+ad)});$("m4").href="https://www.google.com/search?q="+encodeURIComponent(ad+" 學區")}
+function save(){links();try{var o={v:3,C:C,R:RULES,T:CT,V:{}};S1.concat(S3).forEach(function(f){o.V[f[0]]=g(f[0])});o.V.cnote=$("cnote").value;o.V.evtext=$("evtext").value;o.V.evsel=$("evsel").value;o.V.unit=$("unit").value;o.V.ratio=$("ratio").value;o.V.plan=$("plan").value;o.V.own=$("own").value;o.V.eloan=$("eloan").value;o.V.wage=$("wage").value;localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function load(){try{var s=localStorage.getItem(KEY);if(s){var o=JSON.parse(s);C=o.C||[];CT=o.T||[];RULES=o.R||RULES;RULES.forEach(function(r,i){if(!r.f||r.f=="築巢優利貸款方案")r.f=DR[i]?DR[i].f:r.n;if(!r.tp)r.tp=DR[i]?DR[i].tp:""});V=o.V||{};RULES.forEach(function(r){r.tp=(r.tp||"").split("{規則}，").join("")});if(o.v!==3)RULES.forEach(function(r){var d=DR.filter(function(x){return x.n==r.n})[0];if(d)r.tp=d.tp});RULES.forEach(function(r){if(r.c==null)r.c=/築巢/.test(r.n)?1:0;if(r.b==null)r.b=80});var cur=RULES[V.plan];cur=cur&&cur.n;DR.forEach(function(d,i){if(!RULES.some(function(r){return r.n==d.n}))RULES.splice(i,0,JSON.parse(JSON.stringify(d)))});if(cur){for(var k=0;k<RULES.length;k++)if(RULES[k].n==cur)V.plan=String(k)}return true}}catch(e){}return false}
+function rst(){try{localStorage.removeItem(KEY)}catch(e){}V={};C=JSON.parse(JSON.stringify(EX));init2()}
+function clr(){V={};S1.concat(S3).forEach(function(f){V[f[0]]=""});V.cnote="";V.evtext="";V.evsel=EVN;V.unit="";V.ratio="";C=[];init2()}
+function init2(){fill();drawEv();$("cnote").value=V.cnote!=null?V.cnote:"本案押品同一路段相同屋況之佐證資料甚少，故部分採用鄰近路段佐證資料，仍具參考價值";$("unit").value=V.unit!=null?V.unit:"350";$("ratio").value=V.ratio!=null?V.ratio:"190";$("own").value=V.own||OWN[0];if(!$("own").value)$("own").selectedIndex=0;$("eloan").value=V.eloan||"房屋輕鬆貸第一類";if(!$("eloan").value)$("eloan").selectedIndex=0;$("wage").value=V.wage||"≥50萬元";if(!$("wage").value)$("wage").selectedIndex=0;drawR();drawC();run()}
+function parseC(){var n=0,bad=0;$("paste").value.split(String.fromCharCode(10)).forEach(function(l){l=l.trim();if(!l||l.indexOf("物件")<0)return;var t=l.indexOf("聯徵")>=0?"jp":"real";var m=l.match(/([0-9]+[/][0-9]+)(?:成交|鑑價)資料，(.+?)物件，(RC|RB)造([0-9]+)層(電梯大樓|無電梯大樓)之第([0-9]+)層，土地面積([0-9.]+)坪，建物面積([0-9.]+)坪[(（]不含(.+?)([0-9.]+)坪[)）]，屋齡([0-9.]+)年，(?:總價|勘估金額)([0-9,]+)仟元，扣除車位實價([0-9,]+)[仟千]元/);if(!m){bad++;return}var pm=m[9].match(/^(?:B[0-9]+[、及和,]?)+/),ps=pm?pm[0]:"",pf=(ps.match(/B[0-9]+/g)||[]).join(","),pt=m[9].slice(ps.length),sm=/^同社區/.test(m[2]);C.push({t:t,d:{ym:m[1].replace(/\/0+/,"/"),addr:m[2].replace(/^同社區/,""),same:sm,st:m[3]+"造",tf:m[4],bt:m[5],fl:m[6],land:m[7],area:m[8],pkf:pf,pkt:PKO.indexOf(pt)>=0?pt:PKO[0],pa:m[10],age:m[11],total:m[12].replace(/,/g,""),pp:m[13].replace(/,/g,"")}});n++});drawC();run();$("pmsg").textContent="已新增"+n+"筆"+(bad?"，"+bad+"行無法解析，請手動新增":"")}
+function fv(t){if(t.type=="checkbox")return t.checked;return t.tagName=="SELECT"&&t.value==OTH?t.nextElementSibling.value.trim():t.value}
+function zoneTxt(){var t=g("zoneT"),n=g("zoneN").split(",").filter(Boolean);if((t!="住宅區"&&t!="商業區")||!n.length)return t;return(n.length>1?n.slice(0,-1).join("、")+"及"+n[n.length-1]:n[0])+t}
+function setF(id,v){var e=$(id);if(e.classList.contains("zc")){[].forEach.call(e.querySelectorAll("input"),function(c){c.checked=String(v).split(",").indexOf(c.value)>=0});return}if(e.tagName=="SELECT"){var ok=false;for(var i=0;i<e.options.length;i++)if(e.options[i].text==v&&v!=OTH)ok=true;if(ok||v===""){e.value=v===""?e.options[0].value:v;e.nextElementSibling.style.display="none"}else{e.value=OTH;e.nextElementSibling.value=v;e.nextElementSibling.style.display=""}}else e.value=v}
+function setU(v){$("unit").value=v;run()}
+function copyT(t,b,lab){function ok(){b.textContent="已複製";setTimeout(function(){b.textContent=lab},1500)}
+ function fb(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){}a.remove()}
+ if(navigator.clipboard){navigator.clipboard.writeText(t).then(ok,fb)}else fb()}
+function copyR(){copyT($("rep").textContent,$("cp"),"複製")}
+document.addEventListener("input",function(e){var t=e.target,zg=t.closest?t.closest(".zc[data-i]"):null;if(zg){C[zg.dataset.i].d[zg.dataset.k]=[].filter.call(zg.querySelectorAll("input"),function(c){return c.checked}).map(function(c){return c.value}).join(",");upU(zg.dataset.i);run();return}if(t.classList.contains("oth"))t=t.previousElementSibling;if(t.tagName=="SELECT"&&t.nextElementSibling&&t.nextElementSibling.classList.contains("oth"))t.nextElementSibling.style.display=t.value==OTH?"":"none";if(t.id=="evsel"){evPick();return}if(t.id=="bs"){RULES[$("plan").value].b=Math.round((num(t.value)||0)*10);run();return}if(t.id=="tp"){RULES[$("plan").value].tp=t.value;run();return}
+ if(t.dataset.i!=null){C[t.dataset.i].d[t.dataset.k]=fv(t);upU(t.dataset.i)}
+ else if(t.dataset.r!=null){var r=RULES[t.dataset.r],k=t.dataset.k;r[k]=(k=="n"||k=="f")?t.value:k=="c"?(t.checked?1:0):num(t.value)||0;syncBs();if(k=="n"){var v=$("plan").value;drawRFocus(t.dataset.r);return}}
+ run()});
+function drawRFocus(i){var p=$("plan"),v=p.value;p.innerHTML=RULES.map(function(r,j){return '<option value="'+j+'">'+r.n+"</option>"}).join("");p.value=v;run()}
+$("plan").addEventListener("change",function(){$("tp").value=RULES[$("plan").value].tp||"";syncBs();run()});
+inputs(SA,"s1");inputs(SP.concat(SQ),"sp");inputs(SE,"se");inputs(SE2,"se2");inputs(S3,"s3");
+if(!load()){C=JSON.parse(JSON.stringify(EX))}
+init2();
+$("addr").addEventListener("focus",function(){if(this.classList.contains("hl"))this.select()});
+</script>
+</body>
+</html>
